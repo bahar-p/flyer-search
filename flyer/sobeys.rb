@@ -4,7 +4,7 @@ require_relative 'flyer'
 # implements methods to parse sobeys flyer
 class Sobeys < Flyer
 
-  # parse flyer items with their price
+  # overrides flyer items to get sobeys flyer items with their price
   # @return [Array<FlyerItems>] array of flyer items with their price
   def flyer_items
     doc.css('span.wishabi-offscreen').map do |i|

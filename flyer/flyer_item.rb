@@ -10,6 +10,7 @@ class FlyerItem
 
   # @return [Boolean] true if it matches the name to search for
   def match?(name)
-    true if @name == name
+    true if /\w*#{name}\w*/i =~ @name
   end
+
 end

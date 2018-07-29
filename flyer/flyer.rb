@@ -1,12 +1,17 @@
+require  'nokogiri'
+require 'open-uri'
 require_relative 'flyer_item'
 
-#flyer class
+
+#flyer impelements methods to interact with flyers
 class Flyer
 
   def initialize(url)
     @url = url
   end
 
+  # parsed html page
+  # @param return parsed html oage
   def doc
     return @doc if defined?(@doc)
     response = open(@url)
@@ -19,7 +24,7 @@ class Flyer
     return []
   end
 
-  # check whether an item is on sale and prints its price if it is
+  # check whether an item is on sale and gets its price
   # @param name [String] item name to search for
   def find_on_sale(name)
     flyer_items.find do |i|
