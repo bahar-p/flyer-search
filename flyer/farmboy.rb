@@ -1,6 +1,8 @@
+require 'nokogiri'
+require 'open-uri'
 require_relative 'flyer_item'
 
-#flyer class
+# implements methods to parse flyer pages
 class Flyer
 
   def initialize(url)
@@ -13,18 +15,24 @@ class Flyer
     @doc = Nokogiri::HTML(response)
   end
 
-  # flyer items
-  # @param return [Array] array of flyer items
+  # parse flyer items with their price
+  # @return [Array<FlyerItems>] array of flyer items with their price
   def flyer_items
-    return []
+    doc.css("div[style='float:left;margin-right:5px;']").map do |i|
+      price = i.next_element.text
+      price = price.sub('/', ' for').strip
+      FlyerItem.new(i.text, price)
+    end
   end
 
   # check whether an item is on sale and prints its price if it is
   # @param name [String] item name to search for
   def find_on_sale(name)
     flyer_items.find do |i|
-      i.match?(name) unless i.nil?
+      i.match?(name)
     end
   end
 
 end
+
+
