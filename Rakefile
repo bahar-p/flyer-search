@@ -15,9 +15,9 @@ task :run do
 
   case store.downcase
   when "farmboy"
-    flyer = Farmboy.new(FARMBOY_URI)
+    flyer = Farmboy.new(FARMBOY_URI, store)
   when "sobeys"
-    flyer = Sobeys.new(SOBEYS_URI)
+    flyer = Sobeys.new(SOBEYS_URI, store)
   else
     puts "Flyer does not exist"
     return
