@@ -1,27 +1,25 @@
-require_relative 'flyer/farmboy'
-require_relative 'flyer/sobeys'
+# frozen_string_literal: true
 
-FARMBOY_URI =  "https://www.farmboy.ca/weekly-specials/ottawa/weekly-specials-list/".freeze
-SOBEYS_URI =  "https://flyers.sobeys.com/flyers/sobeys-sobeysurbanfresh/grid_view/286283?type=2&locale=en&store_code=4711&hide=special%2Cpub".freeze
+require_relative 'store_flyers/farmboy'
+require_relative 'store_flyers/sobeys'
 
-task :default => %w(:run)
+task default: %w(:run)
 
 desc "Search item for sale in store"
 task :run do
   puts "which store? (options: Farmboy,Sobeys)"
   store = STDIN.gets.chomp
+  flyer = case store.downcase
+  when "farmboy"
+    Farmboy.new
+  when "sobeys"
+    Sobeys.new
+  else
+    raise "no flyer found for #{store}"
+  end
+
   puts "which item are you looking for?"
   item = STDIN.gets.chomp
-
-  case store.downcase
-  when "farmboy"
-    flyer = Farmboy.new(FARMBOY_URI, store)
-  when "sobeys"
-    flyer = Sobeys.new(SOBEYS_URI, store)
-  else
-    puts "Flyer does not exist"
-    return
-  end
 
   flyer.flyer_items
   if result = flyer.find_on_sale(item)
