@@ -7,7 +7,7 @@ class Sobeys < Flyer
   # overrides flyer items to get sobeys flyer items with their price
   # @return [Array<FlyerItems>] array of flyer items with their price
   def flyer_items
-    doc.css('span.wishabi-offscreen').map do |i|
+    doc.css('span.wishabi-offscreen').each_with_object [] do |i, results|
       details = i.text.strip.split("\n")
       name = details[0].strip
       next if name =~ /^This link opens a .*$/
@@ -16,7 +16,7 @@ class Sobeys < Flyer
                 else
                   details[1].strip
               end
-      FlyerItem.new(name, price)
+      results << FlyerItem.new(name, price)
     end
   end
 
