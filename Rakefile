@@ -1,7 +1,5 @@
 # frozen_string_literal: true
-
-require_relative 'store_flyers/farmboy'
-require_relative 'store_flyers/sobeys'
+require_relative 'flyer/flyer'
 
 task default: %w(:run)
 
@@ -9,14 +7,8 @@ desc "Search item for sale in store"
 task :run do
   puts "which store? (options: Farmboy,Sobeys)"
   store = STDIN.gets.chomp
-  flyer = case store.downcase
-  when "farmboy"
-    Farmboy.new
-  when "sobeys"
-    Sobeys.new
-  else
-    raise "no flyer found for #{store}"
-  end
+
+  flyer = Flyer.store_finder(store)
 
   puts "which item are you looking for?"
   item = STDIN.gets.chomp
