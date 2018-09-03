@@ -8,37 +8,31 @@ require_relative 'cache'
 #flyer implements methods to interact with flyers
 class Flyer
 
-  Dir['store_flyers/*.rb'].each do |f|
-    require_relative "#{File.join('..',File.dirname(f), File.basename(f, '.rb'))}"
-  end
+  singleton_class.send(:attr_reader, :descendants)
 
-  # def self.title
   def initialize
     @logger = Logger.new(STDOUT)
     @fname = File.join("cache", "#{self.name}.html")
     @cache = Cache.new(@fname)
   end
 
+  # keep record of all flyer subclasses
   def self.inherited(subklass)
-    @subklasses ||= []
-    @subklasses << subklass
-    #puts "#{@@subklasses}"
+    @descendants ||= []
+    @descendants << subklass
   end
 
-  # TODO: find in subclasses to create instances dynamically
+  # instantiate store flyers dynamically by looking in descendants for store
+  # @param name [String] store flyer name
+  # @return [Flyer] instance of store flyer or nil if store flyer does not exist
   def self.store_finder(name)
-    case name.downcase
-    when "farmboy"
-      Farmboy.new
-    when "sobeys", "sobey"
-      Sobeys.new
-    else
-      raise "no flyer found for #{name}"
-    end
+    klass = @descendants.find {|c| /\s*#{name}\s*/i.match(c.name)}
+    raise "no store flyer found for #{name}" if klass.nil?
+    klass.new
   end
 
-# parse URL content
-# @return [Nokogiri::HTML::Document] flyer data
+  # parse URL content
+  # @return [Nokogiri::HTML::Document] flyer data
   def doc
     return @doc if defined?(@doc)
     File.exist?(@fname) ? load_flyer : load_from_url
@@ -46,7 +40,7 @@ class Flyer
     @logger.error "Error occured reading #{self.name} flyer: #{e.inspect}"
   end
 
-# load flyer data from url
+  # load flyer data from url
   def load_from_url
     @logger.info "Loading #{self.name} flyer url"
     response = open(self.url)
@@ -57,39 +51,44 @@ class Flyer
     @logger.error "Could not load flyer url. Error: #{e.inspect}"
   end
 
-# check if flyer cache is outdated. Flyer gets updated every week
-# @return [Boolean] true if flyer is outdated
+  # check if flyer cache is outdated. Flyer gets updated every week
+  # @return [Boolean] true if flyer is outdated
   def outdated?
     (Time.now - File.mtime(@fname)).abs.to_i / (24 * 3600) >= 6
   end
 
-# load flyer content
+  # load flyer content
   def load_flyer
     outdated? ? load_from_url : @cache.read
   end
 
-# check whether an item is on sale and find its price
-# @param name [String] item name to search for
+  # check whether an item is on sale and find its price
+  # @param name [String] item name to search for
   def find_on_sale(name)
     flyer_items.find do |i|
       i.match?(name)
     end
   end
 
-# flyer items
-# @param return [Array] array of flyer items
+  # flyer items
+  # @param return [Array] array of flyer items
   def flyer_items
     raise NotImplementedError
   end
 
-# @returns store flyer name
+  # @returns store flyer name
   def name
     raise NotImplementedError
   end
 
-# @return store flyer url
+  # @return store flyer url
   def url
     raise NotImplementedError
   end
 
+end
+
+# dynamically require all existing store flyers
+Dir['store_flyers/*.rb'].each do |f|
+  require_relative "#{File.join('..',File.dirname(f), File.basename(f, '.rb'))}"
 end
